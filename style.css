@@ -6,10 +6,3 @@
     margin-top: 10px;
     margin-bottom: 10px;
 }
-
-#whisper_openai_compatible_status {
-    display: inline-block;
-    margin-left: 10px;
-    color: green;
-    font-style: italic;
-}

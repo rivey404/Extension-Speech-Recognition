@@ -22,10 +22,6 @@ class WhisperOpenAICompatibleSttProvider {
             <input type="password" id="whisper_openai_compatible_api_key" class="text_pole" placeholder="Optional API key">
             <span>Model (Optional)</span>
             <input type="text" id="whisper_openai_compatible_model" class="text_pole" placeholder="whisper-1">
-            <div class="speech_recognition_settings_block">
-                <button id="whisper_openai_compatible_save" class="menu_button" type="button">Save Settings</button>
-                <div id="whisper_openai_compatible_status" class="inline-drawer-content"></div>
-            </div>
         </div>
         `;
         return html;
@@ -37,10 +33,6 @@ class WhisperOpenAICompatibleSttProvider {
         this.settings.apiKey = $('#whisper_openai_compatible_api_key').val();
         this.settings.model = $('#whisper_openai_compatible_model').val() || this.defaultSettings.model;
         console.debug(DEBUG_PREFIX + 'Updated settings');
-        
-        // Show save confirmation
-        $('#whisper_openai_compatible_status').text('Settings saved!').show();
-        setTimeout(() => $('#whisper_openai_compatible_status').hide(), 2000);
     }
 
     loadSettings(settings) {
@@ -66,12 +58,6 @@ class WhisperOpenAICompatibleSttProvider {
         $('#whisper_openai_compatible_api_key').val(this.settings.apiKey);
         $('#whisper_openai_compatible_model').val(this.settings.model);
         
-        // Add click handler for save button
-        $('#whisper_openai_compatible_save').off('click').on('click', () => {
-            this.onSettingsChange();
-            return false; // Prevent form submission
-        });
-        
         console.debug(DEBUG_PREFIX + 'Whisper OpenAI Compatible STT settings loaded');
     }
 
@@ -81,14 +67,18 @@ class WhisperOpenAICompatibleSttProvider {
             throw new Error('API endpoint URL is required');
         }
 
+        console.debug(`${DEBUG_PREFIX} Starting audio processing with endpoint: ${this.settings.endpoint}`);
+        
         const requestData = new FormData();
         requestData.append('file', audioBlob, 'record.wav');
 
         // Use the model from settings
         requestData.append('model', this.settings.model);
+        console.debug(`${DEBUG_PREFIX} Using model: ${this.settings.model}`);
 
         if (this.settings.language) {
             requestData.append('language', this.settings.language);
+            console.debug(`${DEBUG_PREFIX} Using language: ${this.settings.language}`);
         }
 
         // Prepare headers - either use the custom API key or get the default headers
@@ -97,28 +87,51 @@ class WhisperOpenAICompatibleSttProvider {
             headers = {
                 'Authorization': `Bearer ${this.settings.apiKey}`,
             };
+            console.debug(`${DEBUG_PREFIX} Using custom API key`);
         } else {
             headers = getRequestHeaders();
             delete headers['Content-Type']; // Let fetch set this for FormData
+            console.debug(`${DEBUG_PREFIX} Using default authentication headers`);
         }
 
         try {
+            console.debug(`${DEBUG_PREFIX} Sending request to endpoint...`);
             const response = await fetch(this.settings.endpoint, {
                 method: 'POST',
                 headers: headers,
                 body: requestData,
             });
 
+            console.debug(`${DEBUG_PREFIX} Received response with status: ${response.status}`);
+
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error(`${DEBUG_PREFIX} Error response: ${response.status} - ${errorText}`);
                 toastr.error(`${response.status}: ${errorText}`, 'STT Generation Failed (Whisper OpenAI Compatible)', { timeOut: 10000 });
                 throw new Error(`HTTP ${response.status}: ${errorText}`);
             }
 
             const result = await response.json();
+            console.debug(`${DEBUG_PREFIX} Successfully processed audio, received text: "${result.text.substring(0, 50)}${result.text.length > 50 ? '...' : ''}"`);
             return result.text;
+            
         } catch (error) {
-            toastr.error(`${error.message}`, 'STT Generation Failed (Whisper OpenAI Compatible)', { timeOut: 10000 });
+            // Log the full error for debugging
+            console.error(`${DEBUG_PREFIX} Error processing audio:`, error);
+            
+            // Provide more helpful error messages depending on error type
+            let errorMessage = error.message;
+            
+            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                errorMessage = `Failed to connect to ${this.settings.endpoint}. Please check your network connection and the endpoint URL.`;
+                console.error(`${DEBUG_PREFIX} Network error details:`, error);
+            }
+            
+            toastr.error(errorMessage, 'STT Generation Failed (Whisper OpenAI Compatible)', { 
+                timeOut: 10000,
+                extendedTimeOut: 20000
+            });
+            
             throw error;
         }
     }
