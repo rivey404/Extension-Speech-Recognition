@@ -23,7 +23,7 @@ class WhisperOpenAICompatibleSttProvider {
             <span>Model (Optional)</span>
             <input type="text" id="whisper_openai_compatible_model" class="text_pole" placeholder="whisper-1">
             <div class="speech_recognition_settings_block">
-                <input id="whisper_openai_compatible_save" class="menu_button" type="submit" value="Save Settings" />
+                <button id="whisper_openai_compatible_save" class="menu_button" type="button">Save Settings</button>
                 <div id="whisper_openai_compatible_status" class="inline-drawer-content"></div>
             </div>
         </div>
@@ -67,7 +67,10 @@ class WhisperOpenAICompatibleSttProvider {
         $('#whisper_openai_compatible_model').val(this.settings.model);
         
         // Add click handler for save button
-        $('#whisper_openai_compatible_save').off('click').on('click', () => this.onSettingsChange());
+        $('#whisper_openai_compatible_save').off('click').on('click', () => {
+            this.onSettingsChange();
+            return false; // Prevent form submission
+        });
         
         console.debug(DEBUG_PREFIX + 'Whisper OpenAI Compatible STT settings loaded');
     }
