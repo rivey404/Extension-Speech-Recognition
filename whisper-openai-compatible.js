@@ -15,21 +15,32 @@ class WhisperOpenAICompatibleSttProvider {
 
     get settingsHtml() {
         let html = `
-        <span>API Endpoint URL</span>
-        <input type="text" id="whisper_openai_compatible_endpoint" class="text_pole" placeholder="https://your-api-endpoint.com/v1/audio/transcriptions">
-        <span>API Key (Optional)</span>
-        <input type="password" id="whisper_openai_compatible_api_key" class="text_pole" placeholder="Optional API key">
-        <span>Model (Optional)</span>
-        <input type="text" id="whisper_openai_compatible_model" class="text_pole" placeholder="whisper-1">
+        <div class="speech_recognition_settings_block">
+            <span>API Endpoint URL</span>
+            <input type="text" id="whisper_openai_compatible_endpoint" class="text_pole" placeholder="https://your-api-endpoint.com/v1/audio/transcriptions">
+            <span>API Key (Optional)</span>
+            <input type="password" id="whisper_openai_compatible_api_key" class="text_pole" placeholder="Optional API key">
+            <span>Model (Optional)</span>
+            <input type="text" id="whisper_openai_compatible_model" class="text_pole" placeholder="whisper-1">
+            <div class="speech_recognition_settings_block">
+                <input id="whisper_openai_compatible_save" class="menu_button" type="submit" value="Save Settings" />
+                <div id="whisper_openai_compatible_status" class="inline-drawer-content"></div>
+            </div>
+        </div>
         `;
         return html;
     }
 
     onSettingsChange() {
+        // Used when provider settings are updated from UI
         this.settings.endpoint = $('#whisper_openai_compatible_endpoint').val();
         this.settings.apiKey = $('#whisper_openai_compatible_api_key').val();
         this.settings.model = $('#whisper_openai_compatible_model').val() || this.defaultSettings.model;
         console.debug(DEBUG_PREFIX + 'Updated settings');
+        
+        // Show save confirmation
+        $('#whisper_openai_compatible_status').text('Settings saved!').show();
+        setTimeout(() => $('#whisper_openai_compatible_status').hide(), 2000);
     }
 
     loadSettings(settings) {
@@ -54,6 +65,9 @@ class WhisperOpenAICompatibleSttProvider {
         $('#whisper_openai_compatible_endpoint').val(this.settings.endpoint);
         $('#whisper_openai_compatible_api_key').val(this.settings.apiKey);
         $('#whisper_openai_compatible_model').val(this.settings.model);
+        
+        // Add click handler for save button
+        $('#whisper_openai_compatible_save').off('click').on('click', () => this.onSettingsChange());
         
         console.debug(DEBUG_PREFIX + 'Whisper OpenAI Compatible STT settings loaded');
     }

@@ -337,7 +337,7 @@ function loadSttProvider(provider) {
         $('#microphone_button').show();
     }
 
-    const nonStreamingProviders = ['Vosk', 'Whisper (OpenAI)', 'Whisper (Extras)', 'Whisper (Local)', 'KoboldCpp'];
+    const nonStreamingProviders = ['Vosk', 'Whisper (OpenAI)', 'Whisper (Extras)', 'Whisper (Local)', 'KoboldCpp', 'Whisper (OpenAI Compatible)'];
     if (nonStreamingProviders.includes(sttProviderName)) {
         sttProvider.loadSettings(extension_settings.speech_recognition[sttProviderName]);
         loadNavigatorAudioRecording();
