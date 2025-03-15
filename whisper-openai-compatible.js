@@ -31,7 +31,7 @@ class WhisperOpenAICompatibleSttProvider {
         // Used when provider settings are updated from UI
         this.settings.endpoint = $('#whisper_openai_compatible_endpoint').val();
         this.settings.apiKey = $('#whisper_openai_compatible_api_key').val();
-        this.settings.model = $('#whisper_openai_compatible_model').val() || this.defaultSettings.model;
+        this.settings.model = $('#whisper_openai_compatible_model').val();
         console.debug(DEBUG_PREFIX + 'Updated settings');
     }
 
